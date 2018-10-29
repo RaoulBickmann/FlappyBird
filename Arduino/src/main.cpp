@@ -25,10 +25,10 @@ void printDistance() {
     distance = duration * 0.034/2;
 
     Serial.print("Distance: ");
-    Serial.println(distance);  
+    Serial.println(duration);  
 }
 
 void loop() {
-    delay(100);
+    delay(50);
     printDistance();
 }
