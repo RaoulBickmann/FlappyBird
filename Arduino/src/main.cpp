@@ -4,15 +4,17 @@ const int triggerPin = 7;
 const int echoPin = 8;    
 
 long duration;
-long distance;
+float distance;
+
 
 void setup() {
     pinMode(triggerPin, OUTPUT);
     pinMode(echoPin, INPUT);
-    Serial.begin(9600); 
+    Serial.begin(9600);
+    Serial.println("time,distance");
 }
 
-void printDistance() {
+void printDuration() {
     digitalWrite(triggerPin, LOW);
     delayMicroseconds(2);
 
@@ -24,11 +26,11 @@ void printDistance() {
 
     distance = duration * 0.034/2;
 
-    Serial.print("Distance: ");
-    Serial.println(duration);  
+    Serial.print(millis());
+    Serial.print(", ");
+    Serial.println(duration);
 }
 
 void loop() {
-    delay(50);
-    printDistance();
+    printDuration();
 }
