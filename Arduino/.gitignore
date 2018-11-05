@@ -1,4 +1,4 @@
+.pio
 .pioenvs
 .piolibdeps
-
-Arduino/.vscode/*
+.vscode/*
