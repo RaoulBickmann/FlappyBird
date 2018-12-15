@@ -14,13 +14,13 @@ void setup() {
     pinMode(triggerPin, OUTPUT);
     pinMode(echoPin, INPUT);
     Serial.begin(9600);
-    Serial.println("time,distance");
+    Serial.println("time,travel_time");
 }
 
 void printDuration() {
 
 
-    if(millis() - lastMillis >= 500) {
+    if(millis() - lastMillis >= 20) {
         digitalWrite(triggerPin, LOW);
         delayMicroseconds(2);
 
@@ -28,14 +28,13 @@ void printDuration() {
         delayMicroseconds(10);
         digitalWrite(triggerPin, LOW);
         
-        duration = pulseIn(echoPin, HIGH, 3333);
+        duration = pulseIn(echoPin, HIGH, 190000);
         distance = duration * 0.034/2;
 
-        Serial.print(millis());
+        lastMillis = millis();
+        Serial.print(lastMillis);
         Serial.print(", ");
         Serial.println(duration);
-        lastMillis = millis();
-
     }
 }
 
