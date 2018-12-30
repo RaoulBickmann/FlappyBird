@@ -7,20 +7,23 @@ const int echoPin = 8;
 long duration;
 float distance;
 
-long lastMillis;
+unsigned long lastMillis;
 
 
 void setup() {
     pinMode(triggerPin, OUTPUT);
     pinMode(echoPin, INPUT);
+    lastMillis = 0;
     Serial.begin(9600);
-    Serial.println("millis,cm");
+    Serial.println("time,cm");
 }
 
-void printDuration() {
+void loop() {
+    unsigned long currentMillis = millis();
 
+    if(currentMillis - lastMillis >= 20) {
+        lastMillis = currentMillis;
 
-    if(millis() - lastMillis >= 20) {
         digitalWrite(triggerPin, LOW);
         delayMicroseconds(2);
 
@@ -28,16 +31,11 @@ void printDuration() {
         delayMicroseconds(10);
         digitalWrite(triggerPin, LOW);
         
-        duration = pulseIn(echoPin, HIGH, 190000);
+        duration = pulseIn(echoPin, HIGH, 9000);
         distance = duration * 0.0343/2;
 
-        lastMillis = millis();
-        Serial.print(lastMillis);
+        Serial.print(currentMillis);
         Serial.print(", ");
         Serial.println(distance, 4);
     }
-}
-
-void loop() {
-    printDuration();
 }

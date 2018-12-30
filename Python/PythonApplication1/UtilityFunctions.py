@@ -1,5 +1,10 @@
-import pandas as pd
+import matplotlib.pyplot as plt
 import numpy as np
+import scipy.linalg as linalg
+import pandas as pd
+import sympy as sp
+import UtilityFunctions as uf
+import KalmanFilter as kalman
 
 def generateData_CAM(a=1, Ts=0.1, N=10, R=0):
     """
@@ -44,6 +49,114 @@ def plot_generatedData(t,y,s_groundtruth, v, a, figsize=(10, 4), dpi=90):
     ax.legend(loc='upper right')
     ax.set_ylabel('Beschleunigung [m/s**2]')
 
+    plt.show()
+
+
+def plot_filteronly(t,y,x,P):
+    fig = plt.figure(figsize=(14, 7))
+    
+    ax1 = plt.subplot(231)
+    ax2 = plt.subplot(232)
+    ax2a = plt.subplot(233)
+    
+    ax = ax1
+    ax.plot(t, y, '.', color='lightblue', label='Messungen')
+    ax.plot(t, x[:,0], color='black', label='Filter')
+    ax.set_ylabel('s(t) [m]')    
+    ax.legend()
+    ax.grid()
+    ax.set_title('Schätzung der Distanz')
+
+    ax = ax2
+    s = np.sqrt(P[:,1,1])
+    ax.fill_between(t, x[:,1]-s, x[:,1]+s, color='yellow')
+    ax.plot(t, x[:,1]+s, lw=1, ls='-', color='lightgray')
+    ax.plot(t, x[:,1]-s, lw=1, ls='-', color='lightgray')
+
+    ax.plot(t, x[:,1], color='black', label='Filter')
+    ax.set_ylabel('v(t) [m/s]')    
+    ax.legend()    
+    ax.grid()
+#     ax.set_ylim([0,4])
+    ax.set_title('Schätzung der Geschwindigkeit')
+    
+    ax = ax2a
+    s = np.sqrt(P[:,1,1])
+    ax.fill_between(t, x[:,2]-s, x[:,2]+s, color='yellow')
+    ax.plot(t, x[:,2]+s, lw=1, ls='-', color='lightgray')
+    ax.plot(t, x[:,2]-s, lw=1, ls='-', color='lightgray')
+
+    ax.plot(t, x[:,2], color='black', label='Filter')
+    ax.set_ylabel('a(t) [m/s**2]')    
+    ax.legend()    
+    ax.grid()
+#     ax.set_ylim([0,6])
+    ax.set_title('Schätzung der Beschleunigung')
+
+    plt.show()
+
+    
+
+def plot_filterresult(t,y,s_groundtruth,v,a,x,P):
+    v = np.ones(len(t))*v
+    fig = plt.figure(figsize=(14, 7))
+    
+    ax1 = plt.subplot(231)
+    ax2 = plt.subplot(232)
+    ax2a = plt.subplot(233)
+    ax3 = plt.subplot(212)    
+
+    
+    ax = ax1
+    ax.plot(t, y, '.', color='lightblue', label='Messungen')
+    ax.plot(t, x[:,0], color='black', label='Filter')
+    ax.plot(t, s_groundtruth, color='green', label='Ground Truth')
+    ax.set_ylabel('s(t) [m]')    
+    ax.legend()
+    ax.grid()
+    ax.set_title('Schätzung der Distanz')
+
+    ax = ax2
+    s = np.sqrt(P[:,1,1])
+    ax.fill_between(t, x[:,1]-s, x[:,1]+s, color='yellow')
+    ax.plot(t, x[:,1]+s, lw=1, ls='-', color='lightgray')
+    ax.plot(t, x[:,1]-s, lw=1, ls='-', color='lightgray')
+
+    ax.plot(t, x[:,1], color='black', label='Filter')
+    ax.plot(t, v, color='green', label='Ground Truth')
+    ax.set_ylabel('v(t) [m/s]')    
+    ax.legend()    
+    ax.grid()
+#     ax.set_ylim([0,4])
+    ax.set_title('Schätzung der Geschwindigkeit')
+    
+    ax = ax2a
+    s = np.sqrt(P[:,1,1])
+    ax.fill_between(t, x[:,2]-s, x[:,2]+s, color='yellow')
+    ax.plot(t, x[:,2]+s, lw=1, ls='-', color='lightgray')
+    ax.plot(t, x[:,2]-s, lw=1, ls='-', color='lightgray')
+
+    ax.plot(t, x[:,2], color='black', label='Filter')
+    ax.plot(t, a, color='green', label='Ground Truth')
+    ax.set_ylabel('a(t) [m/s**2]')    
+    ax.legend()    
+    ax.grid()
+#     ax.set_ylim([0,6])
+    ax.set_title('Schätzung der Beschleunigung')
+    
+    ax = ax3
+    ax.plot(t, x[:,0]-s_groundtruth, color='black', label='Residual (s(t) - s_truth(t))')
+    s = np.sqrt(P[:,0,0])
+    ax.fill_between(t, -s, s, color='yellow')
+#    ax.plot(t, s, ls='--', color='gray')
+#    ax.plot(t, -s, ls='--', color='gray')
+    ax.legend(); ax.grid()
+    ax.set_title('Differenz der Distanz zwischen Filter und Realität')
+
+    plt.show()
+
+
+
 def ReadData(NameDerMessreihe, tstart=0, tend=None, info=False):
     '''
     Diese Funktion liest die Daten aus einer Arduino-Ausgabe ein.
@@ -59,10 +172,21 @@ def ReadData(NameDerMessreihe, tstart=0, tend=None, info=False):
     
     Rückgabe: Datensatz
     '''
-    data = pd.read_csv('%s_daten.csv'%NameDerMessreihe)
+    data = pd.read_csv('%s.csv'%NameDerMessreihe)
     data.time /= 1000
     data.time -= data.time[0]
     data = data[data.time>=tstart]
     if tend is not None:
         data = data[data.time<=tend]
     return data
+
+def preFilter(y):
+    newY = np.copy(y)
+
+    for n in range(y.size):
+        if((n > 6) and (n < y.size - 7)):
+            temp = y[n-6:n+7]
+            temp = sorted(temp)
+            print(temp)
+            newY[n] = temp[6]
+    return newY
