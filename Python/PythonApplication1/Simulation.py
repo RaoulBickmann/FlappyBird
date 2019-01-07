@@ -9,15 +9,13 @@ import KalmanFilter as kalman
 
 def runSimulation():
     # Daten Erzeugung
-    np.random.seed(1)
+    #np.random.seed(1)
     Ts = 0.02               #Abtastrate
     N = 300                 #Anzahl der Messungen
     t = np.arange(N)*Ts     #Zeitvektor
-    Q = 10000                   #Prozessrauschen für die Simulation ::: Varianz des Rucks
-    R = 6                   #cm^2
-    r = np.random.randn(N)*np.sqrt(Q)
-    # a0 = 1                  #Mittlere Geschwindigkeit
-    # a = a0 + r.cumsum()*Ts  #Modifikation durch den Ruck?
+    Q = 100000              #Varianz des Rucks
+    R = 0.68                #cm^2
+
     a = np.arange(N)
     a[0:50]  = 100
     a[50:60]  = 50
@@ -31,7 +29,22 @@ def runSimulation():
     a[230:280]  = -100
     a[280:290]  = -50
     a[290:300]  = 50
-    a = a + r.cumsum()*Ts
+
+    b = np.sin(2*np.pi * 0.25 * t) * 100
+
+    a = np.concatenate((a, b))
+    a = np.concatenate((b, a))
+
+    c = np.copy(a)
+    c = c * -1
+    a = np.concatenate((a, c))
+    a = np.concatenate((a, a))
+
+    N = a.size;
+
+    r = np.random.randn(N)*np.sqrt(Q)
+    a = a + r.cumsum()*Ts  
+
 
     t,v,y,s_true = uf.generateData_CAM(a=a, Ts=Ts, N=N, R=R)
 

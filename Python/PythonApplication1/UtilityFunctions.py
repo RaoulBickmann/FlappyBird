@@ -58,11 +58,16 @@ def plot_filteronly(t,y,x,P):
     ax1 = plt.subplot(231)
     ax2 = plt.subplot(232)
     ax2a = plt.subplot(233)
+
     
     ax = ax1
+    s = np.sqrt(P[:,1,1])
+    ax.fill_between(t, x[:,0]-s, x[:,0]+s, color='yellow')
+    ax.plot(t, x[:,0]+s, lw=1, ls='-', color='lightgray')
+    ax.plot(t, x[:,0]-s, lw=1, ls='-', color='lightgray')
     ax.plot(t, y, '.', color='lightblue', label='Messungen')
     ax.plot(t, x[:,0], color='black', label='Filter')
-    ax.set_ylabel('s(t) [m]')    
+    ax.set_ylabel('s(t) [cm]')    
     ax.legend()
     ax.grid()
     ax.set_title('Schätzung der Distanz')
@@ -74,7 +79,7 @@ def plot_filteronly(t,y,x,P):
     ax.plot(t, x[:,1]-s, lw=1, ls='-', color='lightgray')
 
     ax.plot(t, x[:,1], color='black', label='Filter')
-    ax.set_ylabel('v(t) [m/s]')    
+    ax.set_ylabel('v(t) [cm/s]')    
     ax.legend()    
     ax.grid()
 #     ax.set_ylim([0,4])
@@ -87,7 +92,7 @@ def plot_filteronly(t,y,x,P):
     ax.plot(t, x[:,2]-s, lw=1, ls='-', color='lightgray')
 
     ax.plot(t, x[:,2], color='black', label='Filter')
-    ax.set_ylabel('a(t) [m/s**2]')    
+    ax.set_ylabel('a(t) [cm/s**2]')    
     ax.legend()    
     ax.grid()
 #     ax.set_ylim([0,6])
@@ -111,7 +116,8 @@ def plot_filterresult(t,y,s_groundtruth,v,a,x,P):
     ax.plot(t, y, '.', color='lightblue', label='Messungen')
     ax.plot(t, x[:,0], color='black', label='Filter')
     ax.plot(t, s_groundtruth, color='green', label='Ground Truth')
-    ax.set_ylabel('s(t) [m]')    
+    ax.set_ylabel('s(t) [cm]')    
+    ax.set_xlabel('t [s]')    
     ax.legend()
     ax.grid()
     ax.set_title('Schätzung der Distanz')
@@ -124,7 +130,8 @@ def plot_filterresult(t,y,s_groundtruth,v,a,x,P):
 
     ax.plot(t, x[:,1], color='black', label='Filter')
     ax.plot(t, v, color='green', label='Ground Truth')
-    ax.set_ylabel('v(t) [m/s]')    
+    ax.set_ylabel('v(t) [cm/s]')   
+    #ax.set_xlabel('t [s]')    
     ax.legend()    
     ax.grid()
 #     ax.set_ylim([0,4])
@@ -138,7 +145,8 @@ def plot_filterresult(t,y,s_groundtruth,v,a,x,P):
 
     ax.plot(t, x[:,2], color='black', label='Filter')
     ax.plot(t, a, color='green', label='Ground Truth')
-    ax.set_ylabel('a(t) [m/s**2]')    
+    ax.set_ylabel('a(t) [cm/s**2]')   
+    ax.set_xlabel('t [s]')    
     ax.legend()    
     ax.grid()
 #     ax.set_ylim([0,6])
@@ -147,6 +155,7 @@ def plot_filterresult(t,y,s_groundtruth,v,a,x,P):
     ax = ax3
     ax.plot(t, x[:,0]-s_groundtruth, color='black', label='Residual (s(t) - s_truth(t))')
     s = np.sqrt(P[:,0,0])
+    ax.set_xlabel('t [s]')    
     ax.fill_between(t, -s, s, color='yellow')
 #    ax.plot(t, s, ls='--', color='gray')
 #    ax.plot(t, -s, ls='--', color='gray')
@@ -180,13 +189,22 @@ def ReadData(NameDerMessreihe, tstart=0, tend=None, info=False):
         data = data[data.time<=tend]
     return data
 
+f = 6
+
 def preFilter(y):
     newY = np.copy(y)
 
     for n in range(y.size):
-        if((n > 6) and (n < y.size - 7)):
-            temp = y[n-6:n+7]
+        if((n > f) and (n < y.size - (f+1))):
+            temp = y[n-f:n+(f+1)]
             temp = sorted(temp)
-            print(temp)
-            newY[n] = temp[6]
+            #print(temp)
+            newY[n] = temp[f]
     return newY
+
+def preFilter2(y):
+    for n in range(y.size):
+        if(n > 0) and (np.absolute(y[n] - y[n-1]) > 10):
+            y[n] = y[n-1]
+    print(y)
+    return y

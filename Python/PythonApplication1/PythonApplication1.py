@@ -14,12 +14,20 @@ N = len(data.cm)
 Ts = 0.02
 t = data.time
 
-y = uf.preFilter(y)
+#s_groundtruth = np.ones(N);
+#s_groundtruth *= 20;
+
+#v = np.zeros(N);
+#a = np.zeros(N);
+
+#y = uf.preFilter(y)
+#y = uf.preFilter2(y)
 print(np.std(y))
 x, P = kalman.filter(y, N, Ts)
 
-uf.plot_filteronly(t, y, x, P)
+#uf.plot_filterresult(t, y, s_groundtruth, v, a, x, P)
+#uf.plot_filteronly(t, y, x, P)
 
-#sim.runSimulation()
+sim.runSimulation()
 
 

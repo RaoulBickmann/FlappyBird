@@ -44,8 +44,8 @@ def filter(y, N, Ts):
     Ad, C, Gd = GiveNumericalMatrices(Ts)
     
     t = np.arange(N)*Ts     #Zeitvektor
-    Q = 1000000                 #Prozessrauschen in cm/s^3 ??
-    R = 6                   #Sensorrauschen in cm^2 ??
+    Q = 100000               #Prozessrauschen in cm/s^3 ??
+    R = 0.68                #Sensorrauschen in cm^2 ??
 
     x_post = []
     P_post = []
@@ -59,6 +59,7 @@ def filter(y, N, Ts):
 
         x_prior = Ad * x_post_last
         P_prior = Ad * P_post_last * Ad.T + Gd * Q * Gd.T
+        #print(C * P_prior * C.T)
         S = C * P_prior * C.T + R
         K = P_prior * C.T * np.linalg.inv(S)
         x_post_n = x_prior + K * (y[n] - C * x_prior - D)
