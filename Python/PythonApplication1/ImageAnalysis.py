@@ -1,6 +1,9 @@
 import cv2
 import sys
 import numpy as np
+import pandas as pd
+import KalmanFilter as kf
+import UtilityFunctions as uf
  
 def analyseImage():  
     # Set up tracker.
@@ -87,7 +90,7 @@ def analyseImage():
             m1 = int((p1[0] + p2[0]) / 2)
             m2 = int((a1[0] + a2[0]) / 2)
 
-            print(str(counter) + ": " + str(m1 - m2))
+            print(str(counter) + ": " + str(m1) + " : " + str(int(p1[1] + p2[1]) / 2))
             counter = counter + 1
         else :
             # Tracking failure
@@ -104,4 +107,66 @@ def analyseImage():
  
         # Exit if ESC pressed
         k = cv2.waitKey(1) & 0xff
+        if k == 27 : break
+
+
+def drawData():
+    data = pd.read_csv('data_movie2.csv')
+    y = np.array(data.cm)
+    N = len(data.cm)
+    Ts = 0.02
+    t = data.time
+
+    y = uf.preFilter2(y)
+
+    x, P = kf.filter(y, N, Ts)
+
+    # Read video
+    video = cv2.VideoCapture("movie_movie2.mov")
+ 
+    # Exit if video not opened.
+    if not video.isOpened():
+        print ("Could not open video")
+        sys.exit()
+ 
+    # Read first frame.
+    ok, frame = video.read()
+    if not ok:
+        print ('Cannot read video file')
+        sys.exit()
+     
+    counter = 0
+    n = 0
+    width = video.get(3)  # float
+    offset = 3850
+ 
+    while True:
+        # Read a new frame
+        ok, frame = video.read()
+        if not ok:
+            break
+ 
+        # Draw bounding box
+        if ok:
+            if(counter * 33.333 > offset):
+                while(data.time[n] + offset < counter * 33.333):
+                    n = n + 1
+
+                cv2.circle(frame, (int(width - x[n][0] * 53 - 400), 300), 10, (255,0,0), -1)
+                cv2.circle(frame, (int(width - data.cm[n] * 53 - 400), 277), 10, (0,0,255), -1)
+
+            counter = counter + 1
+
+        else :
+            # Tracking failure
+            cv2.putText(frame, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
+ 
+
+        # Display result
+        cv2.imshow("Tracking", frame)
+
+
+ 
+        # Exit if ESC pressed
+        k = cv2.waitKey(30) & 0xff
         if k == 27 : break

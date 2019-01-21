@@ -60,8 +60,13 @@ def filter(y, N, Ts):
         x_prior = Ad * x_post_last
         P_prior = Ad * P_post_last * Ad.T + Gd * Q * Gd.T
         #print(C * P_prior * C.T)
+
+
         S = C * P_prior * C.T + R
+
         K = P_prior * C.T * np.linalg.inv(S)
+
+
         x_post_n = x_prior + K * (y[n] - C * x_prior - D)
         P_post_n = (np.eye(3) - K * C) * P_prior
 

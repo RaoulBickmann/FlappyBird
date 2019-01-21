@@ -34,13 +34,26 @@ import ImageAnalysis as ima
 #ima.analyseImage();
 
 
-data = pd.read_csv('camera_tracking.csv')
+#data = pd.read_csv('camera_tracking.csv')
 
-millis = np.arange(20, 22960, 20)
-counter = 0
+#millis = np.arange(20, 30000, 20)
+#counter = 0
 
-for n in range(len(millis)):
-    if((counter) * 33.333 < millis[n]):
-        counter = counter + 1
 
-    print(str(data.frame[counter]) + " " + str(millis[n]) + " " + str(data.pixel[counter]/53 + 20))
+#outdata = pd.DataFrame(columns=['time', 'cm'])
+
+#for n in range(len(millis)):
+#    if((counter) * 33.333 < millis[n]):
+#        counter = counter + 1
+
+#    if(counter == 782):
+#        break
+
+#    #print(str(millis[n]) + " " + str(np.round(data.pixel[counter]/53 + 18, 4)))
+#    #temp = [millis[n], np.round(data.pixel[counter]/53 + 18, 4)]
+#    outdata = outdata.append({'time': str(millis[n]), 'cm': np.round(data.pixel[counter]/53 + 18, 4)}, ignore_index = True)
+
+#outdata.to_csv('camera_ms_cm.csv', index=False, sep=';')
+
+ima.drawData()
+ 
