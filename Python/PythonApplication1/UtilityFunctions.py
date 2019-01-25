@@ -157,6 +157,7 @@ def plot_filterresult(t,y,s_groundtruth,v,a,x,P):
     s = np.sqrt(P[:,0,0])
     ax.set_xlabel('t [s]')    
     ax.fill_between(t, -s, s, color='yellow')
+    #ax.set_ylim([-2,2])
 #    ax.plot(t, s, ls='--', color='gray')
 #    ax.plot(t, -s, ls='--', color='gray')
     ax.legend(); ax.grid()
