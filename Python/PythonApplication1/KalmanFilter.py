@@ -43,9 +43,10 @@ def filter(y, N, Ts):
 
     Ad, C, Gd = GiveNumericalMatrices(Ts)
     
-    t = np.arange(N)*Ts     #Zeitvektor
+    #t = np.arange(N)*Ts     #Zeitvektor
     Q = 100000               #Prozessrauschen in cm/s^3 ??
-    R = 0.68                #Sensorrauschen in cm^2 ??
+    R_good = 0.68                #Sensorrauschen in cm^2 ??
+    R_bad = 100000000
 
     x_post = []
     P_post = []
@@ -57,17 +58,24 @@ def filter(y, N, Ts):
             x_post_last = x_post[n-1]
             P_post_last = P_post[n-1]
 
+        print(P_post)
         x_prior = Ad * x_post_last
         P_prior = Ad * P_post_last * Ad.T + Gd * Q * Gd.T
-        #print(C * P_prior * C.T)
 
+        S = C * P_prior * C.T + R_good
+
+        #if abweichung größer als 5 mal standardabweichung dann unsicherheit sehr hoch setzen
+        if(abs(y[n] - C * x_prior) > 5 * np.sqrt(S)):
+            R  = R_bad
+        else:
+            R = R_good
 
         S = C * P_prior * C.T + R
 
         K = P_prior * C.T * np.linalg.inv(S)
 
 
-        x_post_n = x_prior + K * (y[n] - C * x_prior - D)
+        x_post_n = x_prior + K * (y[n] - C * x_prior)
         P_post_n = (np.eye(3) - K * C) * P_prior
 
         x_post.append(x_post_n)

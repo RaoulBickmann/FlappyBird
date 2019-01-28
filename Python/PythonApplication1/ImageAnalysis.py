@@ -110,6 +110,55 @@ def analyseImage():
         if k == 27 : break
 
 
+def colorAnalyse():
+
+    # Read video
+    video = cv2.VideoCapture("movie_movie2.mov")
+ 
+    # Exit if video not opened.
+    if not video.isOpened():
+        print ("Could not open video")
+        sys.exit()
+ 
+    # Read first frame.
+    ok, frame = video.read()
+    if not ok:
+        print ('Cannot read video file')
+        sys.exit()
+ 
+    while True:
+        # Read a new frame
+        ok, frame = video.read()
+        if not ok:
+            break
+         
+ 
+        # Draw bounding box
+        if ok:
+            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+            lower_green = np.array([50,50,50])
+            upper_green = np.array([70,255,255])
+    
+            mask = cv2.inRange(hsv, lower_green, upper_green)
+            res = cv2.bitwise_and(frame,frame, mask= mask)
+
+            #cv2.imshow('frame',frame)
+            #cv2.imshow('mask',mask)
+            #cv2.imshow('res',res)
+
+        else :
+            # Tracking failure
+            cv2.putText(frame, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
+
+        # Display result
+        cv2.imshow("Tracking", res)
+ 
+        # Exit if ESC pressed
+        k = cv2.waitKey(1) & 0xff
+        if k == 27 : break
+    
+
 def drawData():
     data = pd.read_csv('data_movie2.csv')
     y = np.array(data.cm)

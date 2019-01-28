@@ -33,6 +33,9 @@ void loop() {
         
         duration = pulseIn(echoPin, HIGH, 9000);
         distance = duration * 0.0343/2;
+        if(distance == 0) {
+            distance = 200;
+        }
 
         Serial.print(currentMillis);
         Serial.print(", ");

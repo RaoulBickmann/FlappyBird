@@ -134,7 +134,7 @@ def plot_filterresult(t,y,s_groundtruth,v,a,x,P):
     #ax.set_xlabel('t [s]')    
     ax.legend()    
     ax.grid()
-#     ax.set_ylim([0,4])
+    ax.set_ylim([-200,200])
     ax.set_title('Schätzung der Geschwindigkeit')
     
     ax = ax2a
@@ -149,7 +149,7 @@ def plot_filterresult(t,y,s_groundtruth,v,a,x,P):
     ax.set_xlabel('t [s]')    
     ax.legend()    
     ax.grid()
-#     ax.set_ylim([0,6])
+    ax.set_ylim([-10000,10000])
     ax.set_title('Schätzung der Beschleunigung')
     
     ax = ax3
@@ -157,7 +157,7 @@ def plot_filterresult(t,y,s_groundtruth,v,a,x,P):
     s = np.sqrt(P[:,0,0])
     ax.set_xlabel('t [s]')    
     ax.fill_between(t, -s, s, color='yellow')
-    #ax.set_ylim([-2,2])
+    ax.set_ylim([-2,2])
 #    ax.plot(t, s, ls='--', color='gray')
 #    ax.plot(t, -s, ls='--', color='gray')
     ax.legend(); ax.grid()
