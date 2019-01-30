@@ -10,6 +10,8 @@ using UnityEngine;
 using System.Collections;
 using System.Text.RegularExpressions;
 using System;
+using System.IO;
+using System.Text;
 using Kalman;
 
 /**
@@ -19,6 +21,24 @@ using Kalman;
  */
 public class MessageListener : MonoBehaviour
 {
+    private MatrixKalmanWrapper kalman;
+    private StreamReader streamReader;
+    FileStream fileStream = new FileStream(@"E:\Projekte\FlappyBird\Python\PythonApplication1\data_movie2.csv", FileMode.Open, FileAccess.Read);
+
+    public GameObject cube1;
+    public GameObject cube2;
+
+    void Start()
+    {
+        streamReader = new StreamReader(fileStream, Encoding.UTF8);
+        kalman = new MatrixKalmanWrapper();
+    }
+
+    void Update()
+    {
+        test();
+    }
+
     // Invoked when a line of data is received from the serial device.
     void OnMessageArrived(string msg)
     {
@@ -27,30 +47,8 @@ public class MessageListener : MonoBehaviour
         Debug.Log("Message arrived: " + pos[1]);
         if(pos[1] != "cm")
         {
-            transform.position = new Vector3(0f, float.Parse(pos[1]), 0f);
+            transform.position = kalman.Update(new Vector3(0f, float.Parse(pos[1]), 0f));
         }
-    }
-
-    float KalmanFilter(float[] y, int N, float Ts)
-    {
-
-        SimpleKalmanWrapper filter = new SimpleKalmanWrapper();
-
-        //Ad, C, Gd = GiveNumericalMatrices(Ts)
-
-        float Q = 100000;               //Prozessrauschen in cm/s^3 ??
-        float R_good = 0.68f;         //Sensorrauschen in cm^2 ??
-        float R_bad = 100000000;
-
-        float[,,] x_post = new float[3,1, N];
-        float[,,] P_post = new float[3,3, N];
-
-        float[,] x_post_last = new float[,] { { 0 }, { 0 }, { 0 } };
-        float[,] P_post_last = new float[,] { { 100, 0, 0 }, { 0, 9, 0 }, { 0, 0, 1 } };
-
-
-
-       
     }
 
     // Invoked when a connect/disconnect event occurs. The parameter 'success'
@@ -62,5 +60,23 @@ public class MessageListener : MonoBehaviour
             Debug.Log("Connection established");
         else
             Debug.Log("Connection attempt failed or disconnection detected");
+    }
+
+    void test()
+    {
+
+        string line;
+        if ((line = streamReader.ReadLine()) != null)
+        {
+            Debug.Log(line);
+            Regex regex = new Regex(",");
+            string[] pos = regex.Split(line);
+            if (pos[1] != "cm")
+            {
+                cube1.transform.position = kalman.Update(new Vector3(0f, float.Parse(pos[1]), 0f));
+                cube2.transform.position = new Vector3(-3f, float.Parse(pos[1]), 0f);
+            }
+        }
+        
     }
 }
