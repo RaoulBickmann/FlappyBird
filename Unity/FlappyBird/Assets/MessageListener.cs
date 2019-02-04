@@ -21,22 +21,28 @@ using Kalman;
  */
 public class MessageListener : MonoBehaviour
 {
-    private MatrixKalmanWrapper kalman;
+    private MatrixKalmanWrapper kalman1;
+    private MatrixKalmanWrapper kalman2;
+    private MatrixKalmanWrapper kalman3;
     private StreamReader streamReader;
-    FileStream fileStream = new FileStream(@"E:\Projekte\FlappyBird\Python\PythonApplication1\data_movie2.csv", FileMode.Open, FileAccess.Read);
+    FileStream fileStream = new FileStream(@"D:\Projekte\FlappyBird\Python\PythonApplication1\data_movie2.csv", FileMode.Open, FileAccess.Read);
 
+    public GameObject cube;
     public GameObject cube1;
     public GameObject cube2;
+    public GameObject cube3;
 
     void Start()
     {
         streamReader = new StreamReader(fileStream, Encoding.UTF8);
-        kalman = new MatrixKalmanWrapper();
+        kalman1 = new MatrixKalmanWrapper(100000);
+        kalman2 = new MatrixKalmanWrapper(1000000);
+        kalman3 = new MatrixKalmanWrapper(10000);
     }
 
     void Update()
     {
-        test();
+        //test();
     }
 
     // Invoked when a line of data is received from the serial device.
@@ -47,7 +53,10 @@ public class MessageListener : MonoBehaviour
         Debug.Log("Message arrived: " + pos[1]);
         if(pos[1] != "cm")
         {
-            transform.position = kalman.Update(new Vector3(0f, float.Parse(pos[1]), 0f));
+            cube.transform.position = new Vector3(cube.transform.position.x, float.Parse(pos[1]), cube.transform.position.z);
+            cube1.transform.position = kalman1.Update(new Vector3(cube1.transform.position.x, float.Parse(pos[1]), cube1.transform.position.z));
+            cube2.transform.position = kalman2.Update(new Vector3(cube2.transform.position.x, float.Parse(pos[1]), cube2.transform.position.z));
+            cube3.transform.position = kalman3.Update(new Vector3(cube3.transform.position.x, float.Parse(pos[1]), cube3.transform.position.z));
         }
     }
 
@@ -73,7 +82,7 @@ public class MessageListener : MonoBehaviour
             string[] pos = regex.Split(line);
             if (pos[1] != "cm")
             {
-                cube1.transform.position = kalman.Update(new Vector3(0f, float.Parse(pos[1]), 0f));
+                cube1.transform.position = kalman1.Update(new Vector3(0f, float.Parse(pos[1]), 0f));
                 cube2.transform.position = new Vector3(-3f, float.Parse(pos[1]), 0f);
             }
         }

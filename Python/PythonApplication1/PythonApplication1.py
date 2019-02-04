@@ -9,16 +9,14 @@ import Simulation as sim
 import ImageAnalysis as ima
 
 def compare():
-    data = uf.ReadData('data_movie2', False)
+    data = uf.ReadData('data_movie5', False)
 
     y = np.array(data.cm)
     t = np.array(data.time)
-    y = np.delete(y, np.s_[1114:1148])
-    t = np.delete(t, np.s_[1114:1148])
     N = len(y)
     Ts = 0.02
 
-    dataTruth = uf.ReadData('s_truth_test', False)
+    dataTruth = uf.ReadData('truth_movie5', False)
     s_groundtruth = np.array(dataTruth.cm)
     s_groundtruth = s_groundtruth + 0.6
 
@@ -33,16 +31,26 @@ def compare():
     #y = uf.preFilter2(y)
     x, P = kalman.filter(y, N, Ts)
 
+    outdata = pd.DataFrame(columns=['time', 'truth', 'sensor', 'kalman'])
+    for i in range(len(t)):
+        outdata = outdata.append({'time': np.round(t[i] * 1000), 
+                                  'truth': np.round(s_groundtruth[i], 4),
+                                  'sensor': np.round(y[i], 4),
+                                  'kalman': np.round(x[i, 0], 4)}, ignore_index = True)
+
+    outdata.to_csv('kalman_results_movie5.csv', index=False, sep=';')
 
     uf.plot_filterresult(t, y, s_groundtruth, v, a, x, P)
 
 #sim.runSimulation()
 
-#ima.drawData()
+ima.drawData()
 
-compare() 
+#compare() 
  
 #ima.colorAnalyse()
+
+#ima.findCM()
 
 
 

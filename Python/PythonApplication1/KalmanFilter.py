@@ -58,7 +58,6 @@ def filter(y, N, Ts):
             x_post_last = x_post[n-1]
             P_post_last = P_post[n-1]
 
-        print(P_post)
         x_prior = Ad * x_post_last
         P_prior = Ad * P_post_last * Ad.T + Gd * Q * Gd.T
 

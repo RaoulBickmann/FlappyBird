@@ -9,10 +9,10 @@ namespace Kalman {
 	{
 		private KalmanFilter kY;
 		
-		public MatrixKalmanWrapper ()
+		public MatrixKalmanWrapper (double set_q)
 		{
             var Ts = 0.02;
-		    var Q = 1000000.0;
+		    var Q = set_q;
 		    var G = Matrix.CreateVector(Mathf.Pow((float)Ts, 3)/6, Mathf.Pow((float)Ts, 3)/2, Ts);
 		    var a = new Matrix(new[,] { { 0, 1.0, 0 }, { 0, 0, 1.0 }, { 0, 0, 0 } }); //a
 
@@ -30,11 +30,12 @@ namespace Kalman {
             var f = Matrix.IdentityMatrix(3) + (Ts * a) + 0.5 * Matrix.Power(Ts * a, 2);    //ad
 			var b = Matrix.CreateVector(0);
             var u = Matrix.CreateVector(0);
-            var r = Matrix.CreateVector (0.68);
+            var r_good = Matrix.CreateVector (0.68);
+            var r_bad = Matrix.CreateVector (1000000000000);
 		    var q = (Q * G) * G.Transpose();                                                //g * q * g.T
 			var h = new Matrix (new[,] {{1.0 , 0, 0}});                                     //c
 			
-			kY = makeKalmanFilter (f, b, u, q, h, r);
+			kY = makeKalmanFilter (f, b, u, q, h, r_good, r_bad);
 		}
 		
 		public Vector3 Update (Vector3 current)
@@ -47,10 +48,10 @@ namespace Kalman {
 			// kZ.State [1,0];
 			
 			Vector3 filtered = new Vector3 (
-                0f,
+                current.x,
 				(float)kY.State [0, 0],
-                0f
-			);
+                current.z
+            );
 			return filtered;
 		}
 	
@@ -60,7 +61,7 @@ namespace Kalman {
 		}
 		
 		#region Privates
-		KalmanFilter makeKalmanFilter (Matrix f, Matrix b, Matrix u, Matrix q, Matrix h, Matrix r)
+		KalmanFilter makeKalmanFilter (Matrix f, Matrix b, Matrix u, Matrix q, Matrix h, Matrix r_good, Matrix r_bad)
 		{
 			var filter = new KalmanFilter (
 				f.Duplicate (),
@@ -68,7 +69,8 @@ namespace Kalman {
 				u.Duplicate (),
 				q.Duplicate (),
 				h.Duplicate (),
-				r.Duplicate ()
+				r_good.Duplicate (),
+				r_bad.Duplicate ()
 			);
 			// set initial value
 			filter.SetState (

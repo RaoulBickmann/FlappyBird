@@ -113,7 +113,137 @@ def analyseImage():
 def colorAnalyse():
 
     # Read video
-    video = cv2.VideoCapture("movie_movie2.mov")
+    video = cv2.VideoCapture("movie_movie5.mov")
+ 
+    # Exit if video not opened.
+    if not video.isOpened():
+        print ("Could not open video")
+        sys.exit()
+ 
+    # Read first frame.
+    ok, frame = video.read()
+    if not ok:
+        print ('Cannot read video file')
+        sys.exit()
+ 
+    outdata = pd.DataFrame(columns=['cm'])
+
+    while True:
+        # Read a new frame
+        ok, frame = video.read()
+        if not ok:
+            break
+         
+ 
+        if ok:
+            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+            lower_green = np.array([70,80,140])
+            upper_green = np.array([100,255,255])
+            
+
+            mask = cv2.inRange(hsv, lower_green, upper_green)
+            res = cv2.bitwise_and(frame,frame, mask= mask)
+
+            x = 850
+            y = 150
+            while True:
+                px = mask[y, x]
+                if(px == 255):
+                    cm = -1 * ((x - 915) / (30 + np.abs(1- x / 450)))
+                    #print((30 + np.abs(1- x / 450)))
+                    outdata = outdata.append({'cm': np.round(cm, 4)}, ignore_index = True)
+                    break
+                x = x - 1
+            
+            cv2.circle(frame, (x, y), 10, (255,0,0), -1)
+            
+
+            #cv2.imshow('frame',frame)
+            #cv2.imshow('mask',mask)
+            #cv2.imshow('res',res)
+
+        else :
+            # Tracking failure
+            cv2.putText(frame, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
+
+        # Display result
+        cv2.imshow("Tracking", frame)
+ 
+        # Exit if ESC pressed
+        k = cv2.waitKey(1) & 0xff
+        if k == 27 : break
+
+    outdata.to_csv('camera_truth_cm2.csv', index=False, sep=';')
+
+
+
+
+def drawData():
+    data = pd.read_csv('data_movie5.csv')
+    y = np.array(data.cm)
+    N = len(data.cm)
+    Ts = 0.02
+    t = data.time
+
+    x, P = kf.filter(y, N, Ts)
+
+    # Read video
+    video = cv2.VideoCapture("movie_movie5.mov")
+ 
+    # Exit if video not opened.
+    if not video.isOpened():
+        print ("Could not open video")
+        sys.exit()
+ 
+    # Read first frame.
+    ok, frame = video.read()
+    if not ok:
+        print ('Cannot read video file')
+        sys.exit()
+     
+    counter = 0
+    n = 0
+    width = video.get(3)  # float
+ 
+    while True:
+        # Read a new frame
+        ok, frame = video.read()
+        if not ok:
+            break
+ 
+        # Draw bounding box
+        if ok:
+            if(n == len(data.cm)):
+                break
+
+            if(counter > 445):
+                cm = -1 * ((x - 915) / (30 + np.abs(1- x / 450)))
+
+                cv2.circle(frame, (int(x[n][0] * -(30) + 915), 300), 10, (255,0,0), -1)
+                cv2.circle(frame, (int(data.cm[n] * -(30) + 915), 277), 10, (0,0,255), -1)
+                n = n + 1
+
+            counter = counter + 1
+
+        else :
+            # Tracking failure
+            cv2.putText(frame, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
+ 
+
+        # Display result
+        cv2.imshow("Tracking", frame)
+
+
+ 
+        # Exit if ESC pressed
+        k = cv2.waitKey(15) & 0xff
+        if k == 27 : break
+
+
+def findCM():
+    # Read video
+    video = cv2.VideoCapture("movie_movie5.mov")
  
     # Exit if video not opened.
     if not video.isOpened():
@@ -133,89 +263,21 @@ def colorAnalyse():
             break
          
  
-        # Draw bounding box
         if ok:
-            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-            lower_green = np.array([50,50,50])
-            upper_green = np.array([70,255,255])
-    
-            mask = cv2.inRange(hsv, lower_green, upper_green)
-            res = cv2.bitwise_and(frame,frame, mask= mask)
-
-            #cv2.imshow('frame',frame)
-            #cv2.imshow('mask',mask)
-            #cv2.imshow('res',res)
+            
+            x = 915
+            y = 330
+            while (x > 0):
+                cv2.circle(frame, (x, y), 3, (255,0,0), -1)
+                x = x - 30
 
         else :
             # Tracking failure
             cv2.putText(frame, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
-
-        # Display result
-        cv2.imshow("Tracking", res)
- 
-        # Exit if ESC pressed
-        k = cv2.waitKey(1) & 0xff
-        if k == 27 : break
-    
-
-def drawData():
-    data = pd.read_csv('data_movie2.csv')
-    y = np.array(data.cm)
-    N = len(data.cm)
-    Ts = 0.02
-    t = data.time
-
-    y = uf.preFilter2(y)
-
-    x, P = kf.filter(y, N, Ts)
-
-    # Read video
-    video = cv2.VideoCapture("movie_movie2.mov")
- 
-    # Exit if video not opened.
-    if not video.isOpened():
-        print ("Could not open video")
-        sys.exit()
- 
-    # Read first frame.
-    ok, frame = video.read()
-    if not ok:
-        print ('Cannot read video file')
-        sys.exit()
-     
-    counter = 0
-    n = 0
-    width = video.get(3)  # float
-    offset = 3850
- 
-    while True:
-        # Read a new frame
-        ok, frame = video.read()
-        if not ok:
-            break
- 
-        # Draw bounding box
-        if ok:
-            if(counter * 33.333 > offset):
-                while(data.time[n] + offset < counter * 33.333):
-                    n = n + 1
-
-                cv2.circle(frame, (int(width - x[n][0] * 53 - 400), 300), 10, (255,0,0), -1)
-                cv2.circle(frame, (int(width - data.cm[n] * 53 - 400), 277), 10, (0,0,255), -1)
-
-            counter = counter + 1
-
-        else :
-            # Tracking failure
-            cv2.putText(frame, "Tracking failure detected", (100,80), cv2.FONT_HERSHEY_SIMPLEX, 0.75,(0,0,255),2)
- 
 
         # Display result
         cv2.imshow("Tracking", frame)
-
-
  
         # Exit if ESC pressed
-        k = cv2.waitKey(30) & 0xff
+        k = cv2.waitKey(15) & 0xff
         if k == 27 : break
